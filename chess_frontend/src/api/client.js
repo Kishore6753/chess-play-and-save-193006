@@ -68,8 +68,9 @@ export async function apiRequest(path, { method = 'GET', query, body } = {}) {
     throw err;
   }
 
-  // 204 No Content (common for DELETE): return null to avoid parsing issues.
-  if (res.status === 204) return null;
+  // 204/205 No Content (common for DELETE): return null to avoid parsing issues.
+  // Some proxies may also use 205 Reset Content.
+  if (res.status === 204 || res.status === 205) return null;
 
   let payload = null;
   const contentType = res.headers.get('content-type') || '';
@@ -86,6 +87,9 @@ export async function apiRequest(path, { method = 'GET', query, body } = {}) {
       payload = null;
     }
   }
+
+  // Treat empty body as "no content" for convenience across the app.
+  if (payload === '') payload = null;
 
   if (!res.ok) {
     const message =
