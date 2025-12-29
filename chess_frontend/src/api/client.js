@@ -13,15 +13,11 @@ function getApiBaseUrl() {
   // IMPORTANT: Configure a single API base URL via environment.
   //
   // Primary (preferred): REACT_APP_API_BASE
-  // Back-compat fallbacks: REACT_APP_BACKEND_URL, REACT_APP_API_BASE_URL
   //
   // If not provided, we attempt a sensible preview/dev default:
   // - In browser/preview: same hostname as the frontend, port 3001
   // - Otherwise: http://localhost:3001
-  const fromEnv =
-    process.env.REACT_APP_API_BASE ||
-    process.env.REACT_APP_BACKEND_URL ||
-    process.env.REACT_APP_API_BASE_URL;
+  const fromEnv = process.env.REACT_APP_API_BASE;
 
   if (fromEnv) return normalizeBaseUrl(fromEnv);
 
@@ -49,7 +45,7 @@ export async function apiRequest(path, { method = 'GET', query, body } = {}) {
   }
 
   const headers = {
-    'Accept': 'application/json',
+    Accept: 'application/json',
   };
 
   const init = {
@@ -72,6 +68,9 @@ export async function apiRequest(path, { method = 'GET', query, body } = {}) {
     throw err;
   }
 
+  // 204 No Content (common for DELETE): return null to avoid parsing issues.
+  if (res.status === 204) return null;
+
   let payload = null;
   const contentType = res.headers.get('content-type') || '';
   if (contentType.includes('application/json')) {
@@ -90,9 +89,11 @@ export async function apiRequest(path, { method = 'GET', query, body } = {}) {
 
   if (!res.ok) {
     const message =
-      (payload && typeof payload === 'object' && payload.detail) ? payload.detail :
-      (typeof payload === 'string' && payload) ? payload :
-      `Request failed with status ${res.status}.`;
+      payload && typeof payload === 'object' && payload.detail
+        ? payload.detail
+        : typeof payload === 'string' && payload
+          ? payload
+          : `Request failed with status ${res.status}.`;
 
     const err = new Error(message);
     err.status = res.status;
