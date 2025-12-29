@@ -14,12 +14,16 @@ function getApiBaseUrl() {
   //
   // Primary (preferred): REACT_APP_API_BASE
   //
-  // If not provided, we attempt a sensible preview/dev default:
+  // Compatibility fallback (some deployments may still set this): REACT_APP_BACKEND_URL
+  //
+  // If neither is provided, we attempt a sensible preview/dev default:
   // - In browser/preview: same hostname as the frontend, port 3001
   // - Otherwise: http://localhost:3001
-  const fromEnv = process.env.REACT_APP_API_BASE;
+  const fromPrimaryEnv = process.env.REACT_APP_API_BASE;
+  const fromCompatEnv = process.env.REACT_APP_BACKEND_URL;
 
-  if (fromEnv) return normalizeBaseUrl(fromEnv);
+  if (fromPrimaryEnv) return normalizeBaseUrl(fromPrimaryEnv);
+  if (fromCompatEnv) return normalizeBaseUrl(fromCompatEnv);
 
   // window.location-based fallback for preview environments (frontend :3000 -> backend :3001).
   if (typeof window !== 'undefined' && window.location) {
