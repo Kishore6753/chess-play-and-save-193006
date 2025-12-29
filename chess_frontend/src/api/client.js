@@ -10,13 +10,30 @@ function normalizeBaseUrl(raw) {
 }
 
 function getApiBaseUrl() {
-  // IMPORTANT: set REACT_APP_API_BASE_URL in environment for deployment.
-  // Example: http://localhost:8000
-  const fromEnv = process.env.REACT_APP_API_BASE_URL;
+  // IMPORTANT: Configure a single API base URL via environment.
+  //
+  // Primary (preferred): REACT_APP_API_BASE
+  // Back-compat fallbacks: REACT_APP_BACKEND_URL, REACT_APP_API_BASE_URL
+  //
+  // If not provided, we attempt a sensible preview/dev default:
+  // - In browser/preview: same hostname as the frontend, port 3001
+  // - Otherwise: http://localhost:3001
+  const fromEnv =
+    process.env.REACT_APP_API_BASE ||
+    process.env.REACT_APP_BACKEND_URL ||
+    process.env.REACT_APP_API_BASE_URL;
+
   if (fromEnv) return normalizeBaseUrl(fromEnv);
 
-  // Fallback for local dev
-  return 'http://localhost:8000';
+  // window.location-based fallback for preview environments (frontend :3000 -> backend :3001).
+  if (typeof window !== 'undefined' && window.location) {
+    const protocol = window.location.protocol || 'http:';
+    const hostname = window.location.hostname || 'localhost';
+    return normalizeBaseUrl(`${protocol}//${hostname}:3001`);
+  }
+
+  // Local dev fallback
+  return 'http://localhost:3001';
 }
 
 // PUBLIC_INTERFACE

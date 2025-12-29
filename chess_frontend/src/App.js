@@ -312,7 +312,7 @@ function AppInner() {
                       </button>
                     </div>
                     <p className="helpText">
-                      Backend base URL is configurable via <code>REACT_APP_API_BASE_URL</code>.
+                      Backend base URL is configurable via <code>REACT_APP_API_BASE</code>.
                     </p>
                   </div>
                 </div>
